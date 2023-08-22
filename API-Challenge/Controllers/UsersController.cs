@@ -26,33 +26,38 @@ namespace API_Challenge.Controllers
                 new User
                 {
                     UserName = userDto.UserName
-                },userDto.Password
+                }, userDto.Password
                 );
-            if (respuesta == -1)
+            if (respuesta == "existe")
             {
                 _response.IsSuccess = false;
                 _response.DisplayMessage = "Usuario ya existe";
                 return BadRequest(Response);
             }
 
-            if (respuesta == -500)
+            if (respuesta == "error")
             {
                 _response.IsSuccess = false;
                 _response.DisplayMessage = "Error al crear usuario";
                 return BadRequest(_response);
             }
 
-                _response.DisplayMessage = "Usuario creado con exito";
-                _response.Result = respuesta;
-                return Ok(_response);
+            _response.DisplayMessage = "Usuario creado con exito";
+            //_response.Result = respuesta;
+            JwTPackage jpt = new JwTPackage();
+            jpt.UserName = userDto.UserName;
+            jpt.Token = respuesta;
+            _response.Result = jpt;
+            return Ok(_response);
         }
 
         [HttpPost("Login")]
         public async Task<ActionResult> Login(UserDto user)
         {
-            var respuesta = await _userRepository.Login(user.UserName,user.Password);
+            var respuesta = await _userRepository.Login(user.UserName, user.Password);
 
-            if (respuesta == "nouser") {
+            if (respuesta == "nouser")
+            {
                 _response.IsSuccess = false;
                 _response.DisplayMessage = "Usuario no existe";
                 return BadRequest(_response);
@@ -64,9 +69,19 @@ namespace API_Challenge.Controllers
                 _response.DisplayMessage = "Password Incorrecto";
                 return BadRequest(_response);
             }
-            _response.Result=respuesta;
+            //_response.Result = respuesta;
+            JwTPackage jpt = new JwTPackage();
+            jpt.UserName = user.UserName;
+            jpt.Token = respuesta;
+            _response.Result = jpt;
+
             _response.DisplayMessage = "Usuario conectado";
             return Ok(_response);
         }
+    }
+    public class JwTPackage
+    {
+        public string UserName { get; set; }
+        public string Token { get; set; }
     }
 }

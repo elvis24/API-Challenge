@@ -33,7 +33,7 @@ namespace API_Challenge.Controllers
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
-                _response.ErrorMessage=new List<string> { ex.ToString() };
+                _response.ErrorMessage = new List<string> { ex.ToString() };
             }
             return Ok(_response);
         }
@@ -42,8 +42,8 @@ namespace API_Challenge.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Cliente>> GetCliente(int id)
         {
-          var cliente = await _clienteRepository.GetClienteById(id);
-            if (cliente==null)
+            var cliente = await _clienteRepository.GetClienteById(id);
+            if (cliente == null)
             {
                 _response.IsSuccess = false;
                 _response.DisplayMessage = "Cliente no existe";
@@ -109,7 +109,7 @@ namespace API_Challenge.Controllers
                 }
                 else
                 {
-                    _response.IsSuccess=false;
+                    _response.IsSuccess = false;
                     _response.DisplayMessage = "Error al eliminar Cliente";
                     return BadRequest(_response);
                 }

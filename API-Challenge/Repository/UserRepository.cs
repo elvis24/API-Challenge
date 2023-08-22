@@ -13,9 +13,9 @@ namespace API_Challenge.Repository
         private readonly AppDbContext _db;
         private readonly IConfiguration _configuration;
 
-        public UserRepository(AppDbContext db,IConfiguration configuration)
+        public UserRepository(AppDbContext db, IConfiguration configuration)
         {
-            _db = db;   
+            _db = db;
             _configuration = configuration;
         }
         public async Task<string> Login(string userName, string password)
@@ -25,46 +25,46 @@ namespace API_Challenge.Repository
 
             if (user == null)
                 return "nouser";
-            else if(!VerificarPasswordHash(password, user.PasswordHash, user.PasswordSalt)) 
+            else if (!VerificarPasswordHash(password, user.PasswordHash, user.PasswordSalt))
                 return "wrongpassword";
             else
                 return CrearToken(user);
         }
 
-        public async Task<int> RegisterUser(User user, string password)
+        public async Task<string> RegisterUser(User user, string password)
         {
             try
             {
                 if (await UserExiste(user.UserName))
-                    return -1;
+                    return "existe";
 
                 CrearPasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
-                user.PasswordHash=passwordHash;
-                user.PasswordSalt=passwordSalt;
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
 
                 await _db.Users.AddAsync(user);
                 await _db.SaveChangesAsync();
-                return user.Id;
+                return CrearToken(user);
             }
             catch (Exception)
             {
-                return -500;
+                return "error";
             }
         }
 
         public async Task<bool> UserExiste(string username)
         {
-            if (await _db.Users.AnyAsync(x=>x.UserName.ToLower().Equals(username.ToLower()))) return true;
+            if (await _db.Users.AnyAsync(x => x.UserName.ToLower().Equals(username.ToLower()))) return true;
             return false;
         }
 
-        private void CrearPasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt) 
+        private void CrearPasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
                 passwordSalt = hmac.Key;
-                passwordHash=hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }      
+                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            }
         }
 
         public bool VerificarPasswordHash(String password, byte[] passwprdHash, byte[] passwordSalt)
@@ -95,7 +95,7 @@ namespace API_Challenge.Repository
             {
                 Subject = new ClaimsIdentity(claims),
                 Expires = System.DateTime.Now.AddDays(1),
-                SigningCredentials = creds  
+                SigningCredentials = creds
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
